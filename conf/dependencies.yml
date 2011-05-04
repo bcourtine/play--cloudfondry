@@ -2,3 +2,17 @@ self: play -> cloudfoundry 0.1
 
 require:
     - play
+    - org.cloudfoundry -> cloudfoundry-runtime 0.6.0:
+        exclude:
+            - org.springframework -> *
+            - org.springframework.amqp -> *
+            - org.springframework.data -> *
+            - org.apache.tomcat -> *
+            - commons-dbcp -> *
+
+repositories:
+    - spring_milestone:
+        type: iBiblio
+        root: http://maven.springframework.org/milestone
+        contains:
+            - org.cloudfoundry -> *
