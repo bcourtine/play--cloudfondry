@@ -1,6 +1,7 @@
 package play.modules.cloudfoundry;
 
 import org.cloudfoundry.runtime.env.CloudEnvironment;
+import org.cloudfoundry.runtime.env.MongoServiceInfo;
 import org.cloudfoundry.runtime.env.MysqlServiceInfo;
 import play.Logger;
 import play.Play;
@@ -36,29 +37,40 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
         Properties p = Play.configuration;
 
-        // We configure the Cloud Foundry MySQL database only if no other DB is configured.
-        if (p.containsKey("db") || p.containsKey("db.url")) {
-            Logger.warn("[CloudFoundry] A database configuration already exists");
-            return;
-        }
+		// Configuration du service MySQL s'il existe.
+        mysqlServiceConfig(p);
+    }
 
-        // Check that a MySQL service is available.
+	/**
+	 * Configuration of MySQL, if at least one CloudFoundry MySQL service is bound to the instance.
+	 *
+	 * @param p Configuration de l'application Play.
+	 */
+	private void mysqlServiceConfig(Properties p) {
+
+		// Check that a MySQL service is available.
         if (mysqlServices.size() == 0) {
-            Logger.warn("[CloudFoundry] There is no MySQL service bind to this application instance");
+            Logger.info("[CloudFoundry] There is no MySQL service bind to this application instance.");
             return;
         }
 
-        // Check that only one MySQL service is available. It is a non-blocking check.
+		// We configure the Cloud Foundry MySQL database only if no other DB is configured.
+        if (p.containsKey("db") || p.containsKey("db.url")) {
+            Logger.warn("[CloudFoundry] A MySQL database configuration already exists. It will not be overriden.");
+            return;
+        }
+
+		// Check that only one MySQL service is available. It is a non-blocking check.
         if (mysqlServices.size() > 1) {
             Logger.warn("[CloudFoundry] There is more than one MySQL service bind to this application instance. Only the first will be used.");
         }
 
-        MysqlServiceInfo mysqlServiceInfo = mysqlServices.get(0);
+		MysqlServiceInfo mysqlServiceInfo = mysqlServices.get(0);
 
         // Update of Play configuration. Theses properties will be used by the DBPlugin.
         p.put("db.driver", MYSQL_DRIVER);
         p.put("db.url", mysqlServiceInfo.getUrl());
         p.put("db.user", mysqlServiceInfo.getUserName());
         p.put("db.pass", mysqlServiceInfo.getPassword());
-    }
+	}
 }
