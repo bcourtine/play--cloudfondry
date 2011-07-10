@@ -1,7 +1,5 @@
 package play.modules.cloudfoundry;
 
-import org.cloudfoundry.runtime.env.CloudEnvironment;
-import org.cloudfoundry.runtime.env.MongoServiceInfo;
 import org.cloudfoundry.runtime.env.MysqlServiceInfo;
 import play.Logger;
 import play.Play;
@@ -14,11 +12,14 @@ import java.util.Properties;
 
 /**
  * Configuration of Play MySQL DB from Cloud Foundry VCAP_SERVICES env variable, using the cloudfoundry-runtime library.
- * <p/>
- * TODO Manage all CloudFoundry services (MongoDB, Redis, RabbitMQ, etc.).
+ *
+ * TODO Manage all CloudFoundry services (Redis, RabbitMQ, etc.).
+ *
+ * 2011-07-10: MongoDB support.
  *
  * @author Benoît Courtine.
  * @since 2011-05-04.
+ * @version 2011.07.10
  */
 public class CloudFoundryDBPlugin extends PlayPlugin {
 
@@ -39,8 +40,8 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
         Properties p = Play.configuration;
 
-        // Configuration du service MySQL s'il existe.
         mysqlServiceConfig(p);
+        mongoDBServiceConfig(p);
     }
 
     /**
@@ -105,13 +106,13 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
         // Update of Play configuration. Theses properties will be used by the Morphia plugin.
         p.put("morphia.db.host", mongoServiceInfo.getHost());
         p.put("morphia.db.port", mongoServiceInfo.getPort());
-        p.put("morphia.db.name", "???");
-        p.put("morphia.db.username", "???");
+        p.put("morphia.db.name", mongoServiceInfo.getDbName());
+        p.put("morphia.db.username", mongoServiceInfo.getUserName());
         p.put("morphia.db.password", mongoServiceInfo.getPassword());
 
         // id type configuration to "ObjectId" (default), if not defined (can also be "Long").
         if (!p.containsKey("morphia.id.type")) {
-            p.put("morphia.id.type", "Long");
+            p.put("morphia.id.type", "ObjectId");
         }
 
         // Default write concern : http://api.mongodb.org/java/current/com/mongodb/class-use/WriteConcern.html
