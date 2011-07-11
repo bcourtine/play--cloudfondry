@@ -6,6 +6,7 @@ import play.Play;
 import play.PlayPlugin;
 import play.db.DB;
 
+import javax.mail.search.IntegerComparisonTerm;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,11 +16,14 @@ import java.util.Properties;
  * <p/>
  * TODO Manage all CloudFoundry services (Redis, RabbitMQ, etc.).
  * <p/>
- * 2011-07-11: MongoDB support.
+ * <strong>History:</strong>
+ * <ul>
+ * <li>2011-05-04 : initial version. MySQL support.</li>
+ * <li>2011-07-11: MongoDB support.</li>
+ * </ul>
  *
  * @author Benoît Courtine.
  * @version 2011.07.11
- * @since 2011-05-04.
  */
 public class CloudFoundryDBPlugin extends PlayPlugin {
 
@@ -48,6 +52,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      * Configuration of MySQL, if at least one CloudFoundry MySQL service is bound to the instance.
      *
      * @param p Play configuration.
+     * @since 2011.05.04
      */
     private void mysqlServiceConfig(Properties p) {
 
@@ -81,6 +86,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      * Configuration of MongoDB, if at least one CloudFoundry MongoDB service is bound to the instance.
      *
      * @param p Play configuration.
+     * @since 2011.07.11
      */
     private void mongoDBServiceConfig(Properties p) {
 
@@ -110,12 +116,16 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
     /**
      * Configuration of Play Morphia plugin for MongoDB.
      *
+     * <strong>The Morphia plugin uses the db name at compile time. In order to work, the db must be
+     * configured in Play configuration file: <code>morphia.db.name=db</code></strong>
+     *
      * @param p Play configuration to update.
      * @param mongoServiceInfo Information about Cloud Foundry MongoDB service.
+     * @since 2011.07.11
      */
     private void morphiaPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
         p.put("morphia.db.host", mongoServiceInfo.getHost());
-        p.put("morphia.db.port", mongoServiceInfo.getPort());
+        p.put("morphia.db.port", Integer.toString(mongoServiceInfo.getPort()));
         p.put("morphia.db.name", mongoServiceInfo.getDbName());
         p.put("morphia.db.username", mongoServiceInfo.getUserName());
         p.put("morphia.db.password", mongoServiceInfo.getPassword());
@@ -136,10 +146,11 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      *
      * @param p Play configuration to update.
      * @param mongoServiceInfo Information about Cloud Foundry MongoDB service.
+     * @since 2011.07.11
      */
     private void mongoPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
         p.put("mongo.host", mongoServiceInfo.getHost());
-        p.put("mongo.port", mongoServiceInfo.getPort());
+        p.put("mongo.port", Integer.toString(mongoServiceInfo.getPort()));
         p.put("mongo.database", mongoServiceInfo.getDbName());
         p.put("mongo.username", mongoServiceInfo.getUserName());
         p.put("mongo.password", mongoServiceInfo.getPassword());
