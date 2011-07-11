@@ -12,14 +12,14 @@ import java.util.Properties;
 
 /**
  * Configuration of Play MySQL DB from Cloud Foundry VCAP_SERVICES env variable, using the cloudfoundry-runtime library.
- *
+ * <p/>
  * TODO Manage all CloudFoundry services (Redis, RabbitMQ, etc.).
- *
- * 2011-07-10: MongoDB support.
+ * <p/>
+ * 2011-07-11: MongoDB support.
  *
  * @author Benoît Courtine.
+ * @version 2011.07.11
  * @since 2011-05-04.
- * @version 2011.07.10
  */
 public class CloudFoundryDBPlugin extends PlayPlugin {
 
@@ -103,7 +103,17 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
         MongoServiceInfo mongoServiceInfo = mongoServices.get(0);
 
-        // Update of Play configuration. Theses properties will be used by the Morphia plugin.
+        morphiaPluginConfig(p, mongoServiceInfo);
+        mongoPluginConfig(p, mongoServiceInfo);
+    }
+
+    /**
+     * Configuration of Play Morphia plugin for MongoDB.
+     *
+     * @param p Play configuration to update.
+     * @param mongoServiceInfo Information about Cloud Foundry MongoDB service.
+     */
+    private void morphiaPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
         p.put("morphia.db.host", mongoServiceInfo.getHost());
         p.put("morphia.db.port", mongoServiceInfo.getPort());
         p.put("morphia.db.name", mongoServiceInfo.getDbName());
@@ -119,5 +129,19 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
         if (!p.containsKey("morphia.defaultWriteConcern")) {
             p.put("morphia.defaultWriteConcern", "safe");
         }
+    }
+
+    /**
+     * Configuration of Play Mongo plugin for MongoDB.
+     *
+     * @param p Play configuration to update.
+     * @param mongoServiceInfo Information about Cloud Foundry MongoDB service.
+     */
+    private void mongoPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
+        p.put("mongo.host", mongoServiceInfo.getHost());
+        p.put("mongo.port", mongoServiceInfo.getPort());
+        p.put("mongo.database", mongoServiceInfo.getDbName());
+        p.put("mongo.username", mongoServiceInfo.getUserName());
+        p.put("mongo.password", mongoServiceInfo.getPassword());
     }
 }
