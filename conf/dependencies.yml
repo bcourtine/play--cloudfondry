@@ -1,4 +1,4 @@
-self: play -> cloudfoundry 0.1
+self: play -> cloudfoundry 0.2
 
 require:
     - play
