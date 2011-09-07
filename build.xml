@@ -2,7 +2,7 @@
 
 <project name="cloudfoundry" default="build" basedir=".">
 
-    <property name="version">0.2</property>
+    <property name="version">0.3</property>
 
     <target name="check" unless="play.path">
         <fail message="Please specify Play framework path using -Dplay.path=/path/to/framework/home" />
