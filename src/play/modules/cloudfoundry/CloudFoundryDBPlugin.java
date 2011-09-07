@@ -47,6 +47,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
         mysqlServiceConfig(p);
         mongoDBServiceConfig(p);
+        pgsqlServiceConfig(p);
     }
 
     /**
