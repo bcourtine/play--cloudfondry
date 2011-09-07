@@ -1,5 +1,7 @@
 package play.modules.cloudfoundry;
 
+import org.cloudfoundry.runtime.env.CloudEnvironment;
+import org.cloudfoundry.runtime.env.MongoServiceInfo;
 import org.cloudfoundry.runtime.env.MysqlServiceInfo;
 import play.Logger;
 import play.Play;
@@ -13,17 +15,11 @@ import java.util.Properties;
 
 /**
  * Configuration of Play MySQL DB from Cloud Foundry VCAP_SERVICES env variable, using the cloudfoundry-runtime library.
- * <p/>
+ *
  * TODO Manage all CloudFoundry services (Redis, RabbitMQ, etc.).
- * <p/>
- * <strong>History:</strong>
- * <ul>
- * <li>2011-05-04 : initial version. MySQL support.</li>
- * <li>2011-07-11: MongoDB support.</li>
- * </ul>
  *
  * @author Benoît Courtine.
- * @version 2011.07.11
+ * @version 2011.09.07
  */
 public class CloudFoundryDBPlugin extends PlayPlugin {
 
@@ -126,7 +122,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
     private void morphiaPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
         p.put("morphia.db.host", mongoServiceInfo.getHost());
         p.put("morphia.db.port", Integer.toString(mongoServiceInfo.getPort()));
-        p.put("morphia.db.name", mongoServiceInfo.getDbName());
+        p.put("morphia.db.name", mongoServiceInfo.getDatabase());
         p.put("morphia.db.username", mongoServiceInfo.getUserName());
         p.put("morphia.db.password", mongoServiceInfo.getPassword());
 
@@ -151,7 +147,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
     private void mongoPluginConfig(Properties p, MongoServiceInfo mongoServiceInfo) {
         p.put("mongo.host", mongoServiceInfo.getHost());
         p.put("mongo.port", Integer.toString(mongoServiceInfo.getPort()));
-        p.put("mongo.database", mongoServiceInfo.getDbName());
+        p.put("mongo.database", mongoServiceInfo.getDatabase());
         p.put("mongo.username", mongoServiceInfo.getUserName());
         p.put("mongo.password", mongoServiceInfo.getPassword());
     }
