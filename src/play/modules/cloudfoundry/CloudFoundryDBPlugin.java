@@ -1,5 +1,6 @@
 package play.modules.cloudfoundry;
 
+import org.cloudfoundry.runtime.env.AbstractServiceInfo;
 import org.cloudfoundry.runtime.env.CloudEnvironment;
 import org.cloudfoundry.runtime.env.MongoServiceInfo;
 import org.cloudfoundry.runtime.env.MysqlServiceInfo;
@@ -25,7 +26,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
     public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 
-	public static final String POSTGRESQL_DRIVER = "org.postgresql.Driver";
+    public static final String POSTGRESQL_DRIVER = "org.postgresql.Driver";
 
     public CloudEnvironment cloudEnvironment = new CloudEnvironment();
 
@@ -33,7 +34,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
     public List<MongoServiceInfo> mongoServices = cloudEnvironment.getServiceInfos(MongoServiceInfo.class);
 
-	public List<PostgresqlServiceInfo> pgsqlServices = cloudEnvironment.getServiceInfos(PostgresqlServiceInfo.class);
+    public List<PostgresqlServiceInfo> pgsqlServices = cloudEnvironment.getServiceInfos(PostgresqlServiceInfo.class);
 
     /**
      * Update of Play configuration {@link Play#configuration} from Cloud Foundry env variable.
@@ -56,21 +57,8 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      */
     private void mysqlServiceConfig(Properties p) {
 
-        // Check that a MySQL service is available.
-        if (mysqlServices.size() == 0) {
-            Logger.info("[CloudFoundry] There is no MySQL service bound to this application instance.");
+        if (!checkPlaySQLConfig(p) || !checkServiceList(mysqlServices, "MySQL")) {
             return;
-        }
-
-        // We configure the Cloud Foundry MySQL database only if no other DB is configured.
-        if (p.containsKey("db") || p.containsKey("db.url")) {
-            Logger.warn("[CloudFoundry] A MySQL database configuration already exists. It will not be overriden.");
-            return;
-        }
-
-        // Check that only one MySQL service is available. It is a non-blocking check.
-        if (mysqlServices.size() > 1) {
-            Logger.warn("[CloudFoundry] There is more than one MySQL service bind to this application instance. Only the first will be used.");
         }
 
         MysqlServiceInfo mysqlServiceInfo = mysqlServices.get(0);
@@ -90,21 +78,14 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      */
     private void mongoDBServiceConfig(Properties p) {
 
-        // Check that a MongoDB service is available.
-        if (mongoServices.size() == 0) {
-            Logger.info("[CloudFoundry] There is no MongoDB service bound to this application instance.");
-            return;
-        }
-
         // We configure the Cloud Foundry MongoDB database only if no other DB is configured.
         if (p.containsKey("morphia.db.host")) {
             Logger.warn("[CloudFoundry] A MongoDB database configuration already exists. It will not be overriden.");
             return;
         }
 
-        // Check that only one MongoDB service is available. It is a non-blocking check.
-        if (mongoServices.size() > 1) {
-            Logger.warn("[CloudFoundry] There is more than one MongoDB service bind to this application instance. Only the first will be used.");
+        if (!checkServiceList(mongoServices, "MongoDB")) {
+            return;
         }
 
         MongoServiceInfo mongoServiceInfo = mongoServices.get(0);
@@ -156,7 +137,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
         p.put("mongo.password", mongoServiceInfo.getPassword());
     }
 
-	/**
+    /**
      * Configuration of PostgreSQL, if at least one CloudFoundry PostgreSQL service is bound to the instance.
      *
      * @param p Play configuration.
@@ -164,21 +145,8 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      */
     private void pgsqlServiceConfig(Properties p) {
 
-        // Check that a PostgreSQL service is available.
-        if (pgsqlServices.size() == 0) {
-            Logger.info("[CloudFoundry] There is no PostgreSQL service bound to this application instance.");
+        if (!checkPlaySQLConfig(p) || !checkServiceList(pgsqlServices, "PostgreSQL")) {
             return;
-        }
-
-        // We configure the Cloud Foundry PostgreSQL database only if no other DB is configured.
-        if (p.containsKey("db") || p.containsKey("db.url")) {
-            Logger.warn("[CloudFoundry] A PostgreSQL database configuration already exists. It will not be overriden.");
-            return;
-        }
-
-        // Check that only one PostgreSQL service is available. It is a non-blocking check.
-        if (pgsqlServices.size() > 1) {
-            Logger.warn("[CloudFoundry] There is more than one PostgreSQL service bind to this application instance. Only the first will be used.");
         }
 
         PostgresqlServiceInfo pgsqlServiceInfo = pgsqlServices.get(0);
@@ -188,5 +156,46 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
         p.put("db.url", pgsqlServiceInfo.getUrl());
         p.put("db.user", pgsqlServiceInfo.getUserName());
         p.put("db.pass", pgsqlServiceInfo.getPassword());
+    }
+
+    /**
+     * Check the number of services available.
+     *
+     * @param serviceInfos The service list to check.
+     * @param dbName The db name associated to the service list.
+     * @return <code>true</code> if there is one or more services, <code>false</code> otherwise.
+     * @since 2011.09.07
+     */
+    private boolean checkServiceList(List<? extends AbstractServiceInfo> serviceInfos, String dbName) {
+        // Check that a service is available.
+        if (serviceInfos.size() == 0) {
+            Logger.info("[CloudFoundry] There is no %s service bound to this application instance.", dbName);
+            return false;
+        }
+
+        // Check that only one service is available. It is a non-blocking check.
+        if (serviceInfos.size() > 1) {
+            Logger.warn("[CloudFoundry] There is more than one %s service bind to this application instance. " +
+                    "Only the first will be used.", dbName);
+        }
+
+        return true;
+    }
+
+    /**
+     * Check that no SQL database is configured.
+     *
+     * @param p Play configuration.
+     * @return <code>true</code> if no Play SQL configuration is defined, <code>false</code> otherwise.
+     * @since 2011.09.07
+     */
+    private boolean checkPlaySQLConfig(Properties p) {
+        // We configure the Cloud Foundry SQL database only if no other Play DB is configured.
+        if (p.containsKey("db") || p.containsKey("db.url")) {
+            Logger.warn("[CloudFoundry] A SQL database configuration already exists. It will not be overriden.");
+            return false;
+        }
+
+        return true;
     }
 }
