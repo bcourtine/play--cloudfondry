@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="cloudfoundry" default="build" basedir=".">
-    
+
+    <property name="version">0.2</property>
+
     <target name="check" unless="play.path">
         <fail message="Please specify Play framework path using -Dplay.path=/path/to/framework/home" />
     </target>
@@ -29,7 +31,7 @@
                 <include name="**/play.static"/>
             </fileset>
         </copy>
-        <jar destfile="lib/play-cloudfoundry.jar" basedir="tmp/classes">
+        <jar destfile="lib/play-cloudfoundry-${version}.jar" basedir="tmp/classes">
             <manifest>
                 <section name="Play-module">
                     <attribute name="Specification-Title" value="cloudfoundry"/>
