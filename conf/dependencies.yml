@@ -2,7 +2,7 @@ self: play -> cloudfoundry 0.2
 
 require:
     - play
-    - org.cloudfoundry -> cloudfoundry-runtime 0.6.1:
+    - org.cloudfoundry -> cloudfoundry-runtime 0.7.1:
         exclude:
             - org.springframework -> *
             - org.springframework.amqp -> *
