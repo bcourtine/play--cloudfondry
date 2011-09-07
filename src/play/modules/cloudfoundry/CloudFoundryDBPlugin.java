@@ -3,12 +3,12 @@ package play.modules.cloudfoundry;
 import org.cloudfoundry.runtime.env.CloudEnvironment;
 import org.cloudfoundry.runtime.env.MongoServiceInfo;
 import org.cloudfoundry.runtime.env.MysqlServiceInfo;
+import org.cloudfoundry.runtime.env.PostgresqlServiceInfo;
 import play.Logger;
 import play.Play;
 import play.PlayPlugin;
 import play.db.DB;
 
-import javax.mail.search.IntegerComparisonTerm;
 import java.util.List;
 import java.util.Properties;
 
@@ -25,11 +25,15 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
 
     public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 
+	public static final String POSTGRESQL_DRIVER = "org.postgresql.Driver";
+
     public CloudEnvironment cloudEnvironment = new CloudEnvironment();
 
     public List<MysqlServiceInfo> mysqlServices = cloudEnvironment.getServiceInfos(MysqlServiceInfo.class);
 
     public List<MongoServiceInfo> mongoServices = cloudEnvironment.getServiceInfos(MongoServiceInfo.class);
+
+	public List<PostgresqlServiceInfo> pgsqlServices = cloudEnvironment.getServiceInfos(PostgresqlServiceInfo.class);
 
     /**
      * Update of Play configuration {@link Play#configuration} from Cloud Foundry env variable.
@@ -150,5 +154,39 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
         p.put("mongo.database", mongoServiceInfo.getDatabase());
         p.put("mongo.username", mongoServiceInfo.getUserName());
         p.put("mongo.password", mongoServiceInfo.getPassword());
+    }
+
+	/**
+     * Configuration of PostgreSQL, if at least one CloudFoundry PostgreSQL service is bound to the instance.
+     *
+     * @param p Play configuration.
+     * @since 2011.09.07
+     */
+    private void pgsqlServiceConfig(Properties p) {
+
+        // Check that a PostgreSQL service is available.
+        if (pgsqlServices.size() == 0) {
+            Logger.info("[CloudFoundry] There is no PostgreSQL service bound to this application instance.");
+            return;
+        }
+
+        // We configure the Cloud Foundry PostgreSQL database only if no other DB is configured.
+        if (p.containsKey("db") || p.containsKey("db.url")) {
+            Logger.warn("[CloudFoundry] A PostgreSQL database configuration already exists. It will not be overriden.");
+            return;
+        }
+
+        // Check that only one PostgreSQL service is available. It is a non-blocking check.
+        if (pgsqlServices.size() > 1) {
+            Logger.warn("[CloudFoundry] There is more than one PostgreSQL service bind to this application instance. Only the first will be used.");
+        }
+
+        PostgresqlServiceInfo pgsqlServiceInfo = pgsqlServices.get(0);
+
+        // Update of Play configuration. Theses properties will be used by the DBPlugin.
+        p.put("db.driver", POSTGRESQL_DRIVER);
+        p.put("db.url", pgsqlServiceInfo.getUrl());
+        p.put("db.user", pgsqlServiceInfo.getUserName());
+        p.put("db.pass", pgsqlServiceInfo.getPassword());
     }
 }
