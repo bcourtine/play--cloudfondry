@@ -78,20 +78,25 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
      */
     private void mongoDBServiceConfig(Properties p) {
 
-        // We configure the Cloud Foundry MongoDB database only if no other DB is configured.
-        if (p.containsKey("morphia.db.host")) {
-            Logger.warn("[CloudFoundry] A MongoDB database configuration already exists. It will not be overriden.");
-            return;
-        }
-
         if (!checkServiceList(mongoServices, "MongoDB")) {
             return;
         }
 
         MongoServiceInfo mongoServiceInfo = mongoServices.get(0);
 
-        morphiaPluginConfig(p, mongoServiceInfo);
-        mongoPluginConfig(p, mongoServiceInfo);
+        // We configure the Cloud Foundry Morphia plugin only if it is not configured yet.
+        if (p.containsKey("morphia.db.host")) {
+            Logger.warn("[CloudFoundry] A Morphia configuration already exists. It will not be overriden.");
+        } else {
+            morphiaPluginConfig(p, mongoServiceInfo);
+        }
+
+        // We configure the Cloud Foundry MongoDB plugin only if it is not configured yet.
+        if (p.containsKey("mongo.host")) {
+            Logger.warn("[CloudFoundry] A MongoDB configuration already exists. It will not be overriden.");
+        } else {
+            mongoPluginConfig(p, mongoServiceInfo);
+        }
     }
 
     /**
