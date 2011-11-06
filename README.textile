@@ -1,0 +1,24 @@
+h1. Cloud Foundry
+
+Cloud Foundry allows you to easily deploy your Play! application on "Cloud Foundry":http://www.cloudfoundry.com/ PaaS. If you bind a Cloud Foundry service to your instance (MySQL, MongoDB, PostgreSQL), it will configure your Play DB connection for you.
+
+h2. Usage
+
+To use this module, you have to declare it in the dependencies file:
+
+<pre><code>
+require:
+    - play
+    - cloudfoundry -> 0.4
+</code></pre>
+
+If you work with a MongoDB database, you will have to add a MongoDB module: "Mongo":http://www.playframework.org/modules/mongo or "Morphia":http://www.playframework.org/modules/morphia.
+
+Before deploying the application in Cloud Foundry, you must delete/comment your local DB configuration (db, db.url, morphia, etc.): if a DB config is present, the module will not override it.
+
+h3. History
+
+* V0.4: Module documentation added.
+* V0.3: PostgreSQL support added.
+* V0.2: MongoDB support added.
+* V0.1: MySQL support.
