@@ -1,1 +1,4 @@
 dist/
+commands.pyc
+.classpath
+.project
