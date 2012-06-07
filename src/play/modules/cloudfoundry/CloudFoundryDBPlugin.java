@@ -38,6 +38,7 @@ public class CloudFoundryDBPlugin extends PlayPlugin {
     /**
      * Update of Play configuration {@link Play#configuration} from Cloud Foundry env variable.
      * These configuration will be used by {@link play.db.DBPlugin} to configure the {@link DB#datasource}.
+	 * Testme
      */
     @Override
     public void onApplicationStart() {
